@@ -20,7 +20,6 @@ router.get("/secret", (req, res, next) => {
 
 router.post("/register", (req, res) => {
     let user = req.body;
-
     const hash = bc.hashSync(req.body.password, 8);
 
     user.password = hash;
@@ -30,6 +29,7 @@ router.post("/register", (req, res) => {
             res.status(201).json(saved);
         })
         .catch(error => {
+            console.error(error)
             res.status(500).json(error);
         });
 });
@@ -49,14 +49,30 @@ router.post("/login", (req, res) => {
                 //     // they don't match
                 //   }
                 // }).catch()
+                req.session.username = user.username;
                 res.status(200).json({ message: `Welcome ${user.username}!` });
             } else {
                 res.status(401).json({ message: "Invalid Credentials" });
             }
         })
         .catch(error => {
+            console.log(error)
             res.status(500).json(error);
         });
 });
+
+router.get('/logout', (req,res) => {
+    if(req.session) {
+        req.session.destroy(err => {
+            if(err) {
+                res.status(500).json({ message: 'Broke'})
+            } else {
+                res.status(200).json({ message: 'Bye!'})
+            }
+        })
+    } else {
+        res.status(204);
+    }
+})
 
 module.exports = router;
